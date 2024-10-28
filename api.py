@@ -114,44 +114,44 @@ chatbot = None
 @app.route('/api/upload', methods=['POST'])
 def upload_file():
     global chatbot
-    
+
     if 'file' not in request.files:
         return jsonify({'error': 'No file part'}), 400
-    
+
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    
+
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        
+   
         # Initialize chatbot with the uploaded file
         chatbot = Chatbot()
         chatbot._initialize_with_file(filepath)
-        
+
         return jsonify({
             'message': 'File uploaded successfully',
             'summary': chatbot.summary
         })
-    
+
     return jsonify({'error': 'Invalid file type'}), 400
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
     global chatbot
-    
+
     if chatbot is None:
         return jsonify({'error': 'Please upload a document first'}), 400
-    
+
     data = request.json
     if not data or 'message' not in data:
         return jsonify({'error': 'No message provided'}), 400
-    
+
     query = data['message']
     response = chatbot.ask_query(query)
-    
+
     return jsonify({
         'response': response
     })
@@ -163,6 +163,7 @@ def status():
         'initialized': chatbot is not None,
         'summary': chatbot.summary if chatbot else None
     })
+
 
 if __name__ == '__main__':
     app.run(debug=True)
